@@ -1,0 +1,282 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ═══════════════════════════════════════════════════════════════
+// USERS & AUTH
+// ═══════════════════════════════════════════════════════════════
+
+model User {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  password      String
+  displayName   String?
+  avatarUrl     String?
+
+  // Commander profile
+  commanderAvatar    String  @default("general")
+  baseName           String  @default("Command Base")
+  primaryMissionType String  @default("mixed")
+
+  // Tier & limits
+  tier String @default("free")
+
+  // Gamification
+  level       Int    @default(1)
+  experience  Int    @default(0)
+  achievements String @default("[]") // JSON array as string
+
+  // Status
+  onboardingCompleted Boolean @default(false)
+  onboardingStep      Int     @default(0)
+
+  // Timestamps
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  lastActiveAt DateTime @default(now())
+
+  // Relations
+  agents      Agent[]
+  missions    Mission[]
+  apiKeys     UserApiKey[]
+  mapZones    MapZone[]
+  activities  ActivityLog[]
+  templates   MissionTemplate[]
+}
+
+model UserApiKey {
+  id           String   @id @default(cuid())
+  userId       String
+  provider     String
+  encryptedKey String
+  isValid      Boolean  @default(true)
+  lastValidatedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, provider])
+}
+
+// ═══════════════════════════════════════════════════════════════
+// AGENTS
+// ═══════════════════════════════════════════════════════════════
+
+model Agent {
+  id         String @id @default(cuid())
+  userId     String
+  templateId String
+
+  // Identity
+  name         String
+  class        String
+  customAvatar String?
+
+  // Status
+  status           String  @default("idle")
+  currentMissionId String?
+
+  // Position on map
+  positionX Float @default(0)
+  positionY Float @default(0)
+  positionZ Float @default(0)
+
+  // Stats
+  level          Int @default(1)
+  experience     Int @default(0)
+  statSpeed      Int @default(5)
+  statAccuracy   Int @default(5)
+  statStamina    Int @default(5)
+  statVersatility Int @default(5)
+
+  // Skills (JSON array as string)
+  skills String @default("[]")
+
+  // History
+  missionsCompleted    Int   @default(0)
+  totalTasksCompleted  Int   @default(0)
+  successRate          Float @default(100)
+
+  // Control group
+  controlGroup Int?
+
+  // Timestamps
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  lastActiveAt DateTime @default(now())
+
+  // Relations
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  missionAgents  MissionAgent[]
+}
+
+// ═══════════════════════════════════════════════════════════════
+// MISSIONS
+// ═══════════════════════════════════════════════════════════════
+
+model Mission {
+  id     String @id @default(cuid())
+  userId String
+
+  // Mission details
+  title       String
+  description String?
+  type        String @default("general")
+  priority    String @default("normal")
+
+  // Blueprint (JSON as string)
+  blueprint String @default("{}")
+
+  // Resources (JSON as string)
+  resources String @default("{}")
+
+  // Required skills (JSON array as string)
+  requiredSkills String @default("[]")
+
+  // Zone placement
+  zoneId    String?
+  positionX Float @default(0)
+  positionY Float @default(0)
+  positionZ Float @default(0)
+
+  // Status
+  status   String @default("pending")
+  progress Int    @default(0)
+
+  // Output (JSON as string)
+  output String @default("{}")
+  error  String?
+
+  // Timing
+  startedAt         DateTime?
+  completedAt       DateTime?
+  estimatedDuration Int?
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  missionAgents MissionAgent[]
+  zone          MapZone?       @relation(fields: [zoneId], references: [id])
+}
+
+model MissionAgent {
+  id        String @id @default(cuid())
+  missionId String
+  agentId   String
+
+  // Assignment details
+  role       String    @default("worker")
+  assignedAt DateTime  @default(now())
+  startedAt  DateTime?
+  completedAt DateTime?
+
+  // Contribution
+  tasksCompleted    Int   @default(0)
+  contributionScore Float @default(0)
+
+  // Relations
+  mission Mission @relation(fields: [missionId], references: [id], onDelete: Cascade)
+  agent   Agent   @relation(fields: [agentId], references: [id], onDelete: Cascade)
+
+  @@unique([missionId, agentId])
+}
+
+// ═══════════════════════════════════════════════════════════════
+// MAP & ZONES
+// ═══════════════════════════════════════════════════════════════
+
+model MapZone {
+  id     String @id @default(cuid())
+  userId String
+
+  // Zone details
+  type String
+  name String
+
+  // Position & size
+  positionX  Float @default(0)
+  positionY  Float @default(0)
+  positionZ  Float @default(0)
+  sizeWidth  Float @default(20)
+  sizeHeight Float @default(10)
+  sizeDepth  Float @default(20)
+
+  // Capacity
+  maxCapacity Int @default(10)
+
+  // Visual customization
+  color String @default("#4CAF50")
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  missions Mission[]
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ACTIVITY LOG
+// ═══════════════════════════════════════════════════════════════
+
+model ActivityLog {
+  id     String @id @default(cuid())
+  userId String
+
+  // Event details
+  eventType  String
+  entityType String?
+  entityId   String?
+
+  // Data (JSON as string)
+  data String @default("{}")
+
+  // Timestamps
+  createdAt DateTime @default(now())
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ═══════════════════════════════════════════════════════════════
+// MISSION TEMPLATES
+// ═══════════════════════════════════════════════════════════════
+
+model MissionTemplate {
+  id     String @id @default(cuid())
+  userId String
+
+  // Template details
+  name        String
+  description String?
+  category    String @default("custom")
+
+  // Template content (JSON as string)
+  blueprint         String @default("{}")
+  requiredSkills    String @default("[]")
+  recommendedAgents Int    @default(1)
+
+  // Usage
+  timesUsed Int @default(0)
+
+  // Visibility
+  isPublic Boolean @default(false)
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}

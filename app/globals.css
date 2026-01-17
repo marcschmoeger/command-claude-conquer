@@ -1,0 +1,110 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 222 47% 4%;
+    --foreground: 210 40% 98%;
+    --card: 222 47% 6%;
+    --card-foreground: 210 40% 98%;
+    --primary: 199 89% 48%;
+    --primary-foreground: 222 47% 4%;
+    --secondary: 217 91% 60%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217 33% 17%;
+    --muted-foreground: 215 20% 65%;
+    --accent: 263 70% 50%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217 33% 17%;
+    --input: 217 33% 17%;
+    --ring: 199 89% 48%;
+    --radius: 0.5rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: hsl(var(--muted));
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--primary) / 0.5);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--primary) / 0.7);
+}
+
+/* Three.js canvas styling */
+.three-canvas {
+  position: fixed !important;
+  top: 0;
+  left: 0;
+  width: 100vw !important;
+  height: 100vh !important;
+  z-index: 0;
+}
+
+/* Selection box styling */
+.selection-box {
+  position: fixed;
+  border: 2px solid hsl(var(--primary));
+  background: hsl(var(--primary) / 0.1);
+  pointer-events: none;
+  z-index: 100;
+}
+
+/* Agent status indicators */
+.status-idle { @apply text-neon-green; }
+.status-working { @apply text-neon-blue; }
+.status-deploying { @apply text-neon-purple; }
+.status-error { @apply text-neon-red; }
+.status-resting { @apply text-neon-orange; }
+
+/* Glow effects */
+.glow-blue {
+  box-shadow: 0 0 10px theme('colors.neon.blue'), 0 0 20px theme('colors.neon.blue');
+}
+
+.glow-purple {
+  box-shadow: 0 0 10px theme('colors.neon.purple'), 0 0 20px theme('colors.neon.purple');
+}
+
+.glow-green {
+  box-shadow: 0 0 10px theme('colors.neon.green'), 0 0 20px theme('colors.neon.green');
+}
+
+/* Panel glass effect */
+.glass {
+  background: rgba(10, 10, 15, 0.8);
+  backdrop-filter: blur(10px);
+  border: 1px solid hsl(var(--border));
+}
+
+/* Mission progress bar */
+.progress-bar {
+  @apply h-2 rounded-full bg-muted overflow-hidden;
+}
+
+.progress-bar-fill {
+  @apply h-full bg-gradient-to-r from-neon-blue to-neon-purple transition-all duration-300;
+}
