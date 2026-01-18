@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef, useState } from 'react';
-import { useFrame } from '@react-three/fiber';
+import { useFrame, ThreeEvent } from '@react-three/fiber';
 import { Html, Billboard } from '@react-three/drei';
 import { useStore } from '@/store/useStore';
 import type { Agent } from '@/types';
@@ -65,9 +65,9 @@ export function Agent3D({ agent, isSelected }: Agent3DProps) {
     }
   });
 
-  const handleClick = (e: THREE.Event) => {
+  const handleClick = (e: ThreeEvent<MouseEvent>) => {
     e.stopPropagation();
-    selectAgent(agent.id, (e as unknown as MouseEvent).shiftKey);
+    selectAgent(agent.id, e.nativeEvent.shiftKey);
   };
 
   const handlePointerOver = () => {
