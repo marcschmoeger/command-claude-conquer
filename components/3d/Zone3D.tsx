@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef, useState } from 'react';
-import { useFrame } from '@react-three/fiber';
+import { useFrame, ThreeEvent } from '@react-three/fiber';
 import { Html, RoundedBox } from '@react-three/drei';
 import { useStore } from '@/store/useStore';
 import type { MapZone } from '@/types';
@@ -41,7 +41,7 @@ export function Zone3D({ zone }: Zone3DProps) {
     }
   });
 
-  const handleClick = (e: THREE.Event) => {
+  const handleClick = (e: ThreeEvent<MouseEvent>) => {
     e.stopPropagation();
 
     // If agents are selected, this would be where we deploy them
